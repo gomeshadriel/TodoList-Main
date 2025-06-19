@@ -8,28 +8,31 @@
 //     </li>
 //   );
 // };
-import React, { useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import React, { useState } from "react";
+import { useAuth } from "../contexts/AuthContext";
 
 export const Task = ({ task, onDelete, onToggle, onUpdate }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(task.title);
-  const [editDescription, setEditDescription] = useState(task.description || '');
-  
+  const [editDescription, setEditDescription] = useState(
+    task.description || ""
+  );
+
   const { isAdmin } = useAuth();
 
   const handleSave = () => {
     onUpdate({
       title: editTitle,
       description: editDescription,
-      completed: task.completed
+      finishDate: task.finishDate,
+      status: task.status,
     });
     setIsEditing(false);
   };
 
   const handleCancel = () => {
     setEditTitle(task.title);
-    setEditDescription(task.description || '');
+    setEditDescription(task.description || "");
     setIsEditing(false);
   };
 
@@ -49,8 +52,12 @@ export const Task = ({ task, onDelete, onToggle, onUpdate }) => {
             placeholder="Task description (optional)"
           />
           <div className="task-actions">
-            <button onClick={handleSave} className="save-btn">Save</button>
-            <button onClick={handleCancel} className="cancel-btn">Cancel</button>
+            <button onClick={handleSave} className="save-btn">
+              Save
+            </button>
+            <button onClick={handleCancel} className="cancel-btn">
+              Cancel
+            </button>
           </div>
         </div>
       </li>
@@ -58,13 +65,8 @@ export const Task = ({ task, onDelete, onToggle, onUpdate }) => {
   }
 
   return (
-    <li className={`task-item ${task.completed ? 'completed' : ''}`}>
+    <li className={`task-item `}>
       <div className="task-content">
-        <input
-          type="checkbox"
-          checked={task.completed}
-          onChange={onToggle}
-        />
         <div className="task-text">
           <h3>{task.title}</h3>
           {task.description && <p>{task.description}</p>}
