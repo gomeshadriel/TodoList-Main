@@ -1,31 +1,24 @@
-// import React from "react";
-
-// export const Task = ({ task, onDelete }) => {
-//   return (
-//     <li>
-//       <span>{task.text}</span>
-//       <button onClick={onDelete}>Remover</button>
-//     </li>
-//   );
-// };
 import React, { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 
-export const Task = ({ task, onDelete, onToggle, onUpdate }) => {
+export const Task = ({ task, onDelete, onToggle, onUpdate, onAddComment }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(task.title);
   const [editDescription, setEditDescription] = useState(
     task.description || ""
   );
+  const [showComments, setShowComments] = useState(false);
 
   const { isAdmin } = useAuth();
+
+  const [comment, setComment] = useState("");
+  const comments = task.comments || []; 
 
   const handleSave = () => {
     onUpdate({
       title: editTitle,
       description: editDescription,
-      finishDate: task.finishDate,
-      status: task.status,
+      completed: task.completed,
     });
     setIsEditing(false);
   };
@@ -34,6 +27,26 @@ export const Task = ({ task, onDelete, onToggle, onUpdate }) => {
     setEditTitle(task.title);
     setEditDescription(task.description || "");
     setIsEditing(false);
+  };
+
+  const handleAddComment = async (e) => {
+    e.preventDefault();
+    if (comment.trim() && onAddComment) {
+      try {
+        await onAddComment(task.id, comment.trim());
+        setComment("");
+      } catch (error) {
+        console.error("Error adding comment:", error);
+      }
+    }
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleString();
+  };
+
+  const toggleComments = () => {
+    setShowComments(!showComments);
   };
 
   if (isEditing) {
@@ -65,21 +78,81 @@ export const Task = ({ task, onDelete, onToggle, onUpdate }) => {
   }
 
   return (
-    <li className={`task-item `}>
-      <div className="task-content">
-        <div className="task-text">
-          <h3>{task.title}</h3>
-          {task.description && <p>{task.description}</p>}
+    <li className={`task-item ${task.completed ? "completed" : ""}`}>
+      <div className="task-head">
+        <div className="task-content">
+          <input
+            type="checkbox"
+            checked={task.completed}
+            onChange={() => onToggle(task.id)}
+          />
+          <div className="task-text">
+            <h3>{task.title}</h3>
+            {task.description && <p>{task.description}</p>}
+          </div>
+        </div>
+        <div className="task-actions">
+          {isAdmin() && (
+          <button onClick={() => setIsEditing(true)} className="edit-btn">
+            Edit
+          </button>
+          )}
+          {isAdmin() && (
+            <button onClick={() => onDelete(task.id)} className="delete-btn">
+              Delete
+            </button>
+            )}
         </div>
       </div>
-      <div className="task-actions">
-        <button onClick={() => setIsEditing(true)} className="edit-btn">
-          Edit
-        </button>
-        {isAdmin() && (
-          <button onClick={onDelete} className="delete-btn">
-            Delete
+
+      <div className="task-bottom">
+        <div className="comments-toggle">
+          <button onClick={toggleComments} className="toggle-comments-btn">
+            {showComments
+              ? "Hide Comments"
+              : `Show Comments ${
+                  comments.length > 0 ? `(${comments.length})` : ""
+                }`}
           </button>
+        </div>
+
+        {showComments && (
+          <div className="task-comments-section">
+            <form onSubmit={handleAddComment} className="comment-form">
+              <div className="comment-input-group">
+                <textarea
+                  placeholder="Add a comment..."
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  rows="2"
+                />
+                <button type="submit" className="add-comment-btn">
+                  Add Comment
+                </button>
+              </div>
+            </form>
+
+            {comments.length > 0 && (
+              <div className="comments-list">
+                <h4>Comments:</h4>
+                <ul className="comments">
+                  {comments.map((commentItem) => (
+                    <li key={commentItem.id} className="comment-item">
+                      <div className="comment-content">
+                        <strong className="comment-author">
+                          {commentItem.author}
+                        </strong>
+                        <span className="comment-date">
+                          {formatDate(commentItem.created_at)}
+                        </span>
+                        <p className="comment-text">{commentItem.text}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
         )}
       </div>
     </li>
