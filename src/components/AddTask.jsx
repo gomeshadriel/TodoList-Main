@@ -5,8 +5,8 @@ import { DatePicker } from "antd";
 export const AddTask = ({ onTaskAdded }) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [status, setStatus] = useState(Number);
-  const [finishDate, setFinishDate] = useState(Date);
+  const [situation, setSituation] = useState(0); // Corrigido: valor inicial numérico
+  const [finishDate, setFinishDate] = useState(""); // Corrigido: valor inicial string
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -25,16 +25,18 @@ export const AddTask = ({ onTaskAdded }) => {
       console.log("Submitting task:", {
         title: title.trim(),
         description: description.trim(),
+        finishDate,
+        situation,
       });
 
       const newTask = await taskAPI.createTask({
         title: title.trim(),
         description: description.trim(),
-        finishDate: false,
-        status: status,
+        finishDate: finishDate || null, // Envia a data ou null
+        situation: situation, // Corrigido: envia o valor correto
       });
 
-      console.log("Task created:", newTask);
+      
 
       if (onTaskAdded && typeof onTaskAdded === "function") {
         onTaskAdded(newTask);
@@ -42,6 +44,8 @@ export const AddTask = ({ onTaskAdded }) => {
 
       setTitle("");
       setDescription("");
+      setFinishDate(""); // Limpa o campo após adicionar
+      setSituation(0); // Reseta situação
     } catch (err) {
       console.error("Error adding task:", err);
       setError(err.message || "Failed to add task. Please try again.");
@@ -149,11 +153,11 @@ export const AddTask = ({ onTaskAdded }) => {
           })()}
         </div>
         <div className="form-group">
-          <label>Status:</label>
+          <label>Situation:</label>
           <select
-            id="status"
-            value={status}
-            onChange={(e) => setStatus(Number(e.target.value))}
+            id="situation"
+            value={situation}
+            onChange={(e) => setSituation(Number(e.target.value))}
             disabled={isSubmitting}
           >
             <option value={0}>Backlog</option>

@@ -79,7 +79,7 @@ export const TaskList = () => {
   };
 
   if (loading) return <div className="loading">Loading tasks...</div>;
-
+  console.log("Tasks loaded:", tasks);
   return (
     <div className="app">
       <Header />
@@ -91,18 +91,37 @@ export const TaskList = () => {
 
         <Row
           style={{
+            borderRadius: "8px",
             display: "flex",
-            justifyContent: "space-between",
             width: "100%",
+            overflowX: "auto",
+            gap: "16px",
+            boxSizing: "border-box",
           }}
         >
-          <Col>
-            <h2>Backlog</h2>
+          <Col
+            md={24}
+            xxl={6}
+            style={{
+              flex: "1 1 0",
+              minWidth: 0,
+              display: "flex",
+              flexDirection: "column",
+              backgroundColor: "#CDCDCD",
+              borderRadius: "6px",
+              margin: 0,
+              padding: "12px",
+              boxSizing: "border-box",
+              maxWidth: "25%",
+              gap: "8px",
+            }}
+          >
+            <h3>Backlog</h3>
             <Flex>
               {tasks.length > 0 ? (
                 <ul className="tasks-list">
                   {tasks
-                    .filter((task) => task.status === 0)
+                    .filter((task) => task.situation === 0)
                     .map((task) => (
                       <Task
                         key={task.id}
@@ -122,14 +141,131 @@ export const TaskList = () => {
               )}
             </Flex>
           </Col>
-          <Col>
-            <h2>Em desenvolvimento</h2>
+          <Col
+            md={24}
+            xxl={6}
+            style={{
+              flex: "1 1 0",
+              minWidth: 0,
+              display: "flex",
+              flexDirection: "column",
+              backgroundColor: "#CDCDCD",
+              borderRadius: "6px",
+              margin: 0,
+              padding: "12px",
+              boxSizing: "border-box",
+              maxWidth: "25%",
+              gap: "8px",
+            }}
+          >
+            <h3>Em desenvolvimento</h3>
+            <Flex>
+              {tasks.length > 0 ? (
+                <ul className="tasks-list">
+                  {tasks
+                    .filter((task) => task.situation === 1)
+                    .map((task) => (
+                      <Task
+                        key={task.id}
+                        task={task}
+                        onDelete={() => handleDeleteTask(task.id)}
+                        onToggle={() => handleToggleTask(task.id)}
+                        onUpdate={(updatedTaskData) =>
+                          handleUpdateTask(task.id, updatedTaskData)
+                        }
+                      />
+                    ))}
+                </ul>
+              ) : (
+                <p className="no-tasks">
+                  No tasks yet. Add your first task above!
+                </p>
+              )}
+            </Flex>
           </Col>
-          <Col>
-            <h2>Repasse</h2>
+          <Col
+            md={24}
+            xxl={6}
+            style={{
+              flex: "1 1 0",
+              minWidth: 0,
+              display: "flex",
+              flexDirection: "column",
+              backgroundColor: "#CDCDCD",
+              borderRadius: "6px",
+              margin: 0,
+              padding: "12px",
+              boxSizing: "border-box",
+              maxWidth: "25%",
+              gap: "8px",
+            }}
+          >
+            <h3>Repasse</h3>
+            <Flex>
+              {tasks.length > 0 ? (
+                <ul className="tasks-list">
+                  {tasks
+                    .filter((task) => task.situation === 2)
+                    .map((task) => (
+                      <Task
+                        key={task.id}
+                        task={task}
+                        onDelete={() => handleDeleteTask(task.id)}
+                        onToggle={() => handleToggleTask(task.id)}
+                        onUpdate={(updatedTaskData) =>
+                          handleUpdateTask(task.id, updatedTaskData)
+                        }
+                      />
+                    ))}
+                </ul>
+              ) : (
+                <p className="no-tasks">
+                  No tasks yet. Add your first task above!
+                </p>
+              )}
+            </Flex>
           </Col>
-          <Col>
-            <h2>Entregues</h2>
+          <Col
+            md={24}
+            xxl={6}
+            style={{
+              flex: "1 1 0",
+              minWidth: 0,
+              display: "flex",
+              flexDirection: "column",
+              backgroundColor: "#CDCDCD",
+              borderRadius: "6px",
+              margin: 0,
+              padding: "12px",
+              boxSizing: "border-box",
+              maxWidth: "25%",
+              gap: "8px",
+            }}
+          >
+            <h3>Entregues</h3>
+            <Flex>
+              {tasks.length > 0 ? (
+                <ul className="tasks-list">
+                  {tasks
+                    .filter((task) => task.situation === 3)
+                    .map((task) => (
+                      <Task
+                        key={task.id}
+                        task={task}
+                        onDelete={() => handleDeleteTask(task.id)}
+                        onToggle={() => handleToggleTask(task.id)}
+                        onUpdate={(updatedTaskData) =>
+                          handleUpdateTask(task.id, updatedTaskData)
+                        }
+                      />
+                    ))}
+                </ul>
+              ) : (
+                <p className="no-tasks">
+                  No tasks yet. Add your first task above!
+                </p>
+              )}
+            </Flex>
           </Col>
         </Row>
 

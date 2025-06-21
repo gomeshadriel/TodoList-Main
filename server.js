@@ -53,7 +53,7 @@ db.serialize(() => {
       user_id INTEGER NOT NULL,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      status INTEGER DEFAULT 0,
+      situation INTEGER DEFAULT 0,
       FOREIGN KEY (user_id) REFERENCES users (id)      
     )
   `);
@@ -284,7 +284,7 @@ app.post("/api/tasks", authenticateToken, (req, res) => {
   console.log("Creating task request:", req.body);
   console.log("User:", req.user);
 
-  const { title, description, completed = false } = req.body;
+  const { title, description, finishDate, situation } = req.body;
 
   if (!title) {
     console.log("Missing title");
@@ -294,8 +294,8 @@ app.post("/api/tasks", authenticateToken, (req, res) => {
   }
 
   const sql =
-    "INSERT INTO tasks (title, description, completed, user_id) VALUES (?, ?, ?, ?)";
-  const params = [title, description, completed ? 1 : 0, req.user.id];
+    "INSERT INTO tasks (title, description, finish_date, situation, user_id) VALUES (?, ?, ?, ?, ?)";
+  const params = [title, description, finishDate, situation, req.user.id];
 
   console.log("SQL params:", params);
 
@@ -310,7 +310,8 @@ app.post("/api/tasks", authenticateToken, (req, res) => {
       id: this.lastID,
       title,
       description,
-      completed,
+      finish_date: finishDate,
+      situation: situation,
       user_id: req.user.id,
     };
 
@@ -325,7 +326,7 @@ app.post("/api/tasks", authenticateToken, (req, res) => {
 
 app.put("/api/tasks/:id", authenticateToken, (req, res) => {
   const { id } = req.params;
-  const { title, description, completed } = req.body;
+  const { title, description, finishDate, situation } = req.body;
 
   if (!title) {
     return res.status(400).json({
@@ -335,10 +336,10 @@ app.put("/api/tasks/:id", authenticateToken, (req, res) => {
 
   const sql = `
     UPDATE tasks 
-    SET title = ?, description = ?, completed = ?, updated_at = CURRENT_TIMESTAMP 
+    SET title = ?, description = ?, finish_date = ?, situation = ?, updated_at = CURRENT_TIMESTAMP 
     WHERE id = ?
   `;
-  const params = [title, description, completed ? 1 : 0, id];
+  const params = [title, description, finishDate, situation, id];
 
   db.run(sql, params, function (err) {
     if (err) {
@@ -356,7 +357,8 @@ app.put("/api/tasks/:id", authenticateToken, (req, res) => {
           id: parseInt(id),
           title,
           description,
-          completed,
+          finish_date: finishDate,
+          situation: situation,
         },
       });
     }
@@ -365,13 +367,6 @@ app.put("/api/tasks/:id", authenticateToken, (req, res) => {
 
 app.patch("/api/tasks/:id/toggle", authenticateToken, (req, res) => {
   const { id } = req.params;
-
-  const sql = `
-    UPDATE tasks 
-    SET completed = CASE WHEN completed = 1 THEN 0 ELSE 1 END,
-        updated_at = CURRENT_TIMESTAMP 
-    WHERE id = ?
-  `;
 
   db.run(sql, [id], function (err) {
     if (err) {
