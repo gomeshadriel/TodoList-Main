@@ -72,7 +72,7 @@ export const Task = ({ task, onDelete, onToggle, onUpdate }) => {
             <Row>
               <Col xs={24} xxl={12}>
                 <label>Finish Date</label>
-                <h3>{task.finish_date}</h3>
+                <p style={{ fontWeight: "bold" }}>{task.finish_date}</p>
               </Col>
               <Col xs={24} xxl={12}>
                 <label>Priority</label>
@@ -85,13 +85,25 @@ export const Task = ({ task, onDelete, onToggle, onUpdate }) => {
                   const diffTime = finishDate.getTime() - today.getTime();
                   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                   if (diffDays <= 3) {
-                    return <h3 style={{ color: "#F03239" }}>High</h3>;
+                    return (
+                      <p style={{ color: "#F03239", fontWeight: "bold" }}>
+                        High
+                      </p>
+                    );
                   }
                   if (diffDays > 3 && diffDays <= 5) {
-                    return <h3 style={{ color: "#D4CB4E" }}>Medium</h3>;
+                    return (
+                      <p style={{ color: "#D4CB4E", fontWeight: "bold" }}>
+                        Medium
+                      </p>
+                    );
                   }
                   if (diffDays > 5) {
-                    return <h3 style={{ color: "#00D223" }}>Low</h3>;
+                    return (
+                      <p style={{ color: "#00D223", fontWeight: "bold" }}>
+                        Low
+                      </p>
+                    );
                   }
                   return null;
                 })()}
@@ -99,16 +111,6 @@ export const Task = ({ task, onDelete, onToggle, onUpdate }) => {
             </Row>
           </Col>
         </Row>
-        {/* <div className="task-actions" onClick={(e) => e.stopPropagation()}>
-          <button onClick={handleOpenModal} className="edit-btn">
-            Edit
-          </button>
-          {isAdmin() && (
-            <button onClick={onDelete} className="delete-btn">
-              Delete
-            </button>
-          )}
-        </div> */}
       </li>
       {isModalOpen && (
         <div
@@ -133,41 +135,104 @@ export const Task = ({ task, onDelete, onToggle, onUpdate }) => {
               padding: 24,
               borderRadius: 8,
               minWidth: 320,
-              maxWidth: 400,
+              maxWidth: 1000,
               boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
             }}
           >
             <h2>Editar Tarefa</h2>
+            <label>Title:</label>
             <input
               type="text"
               value={editTitle}
               onChange={(e) => setEditTitle(e.target.value)}
               placeholder="Task title"
-              style={{ width: "100%", marginBottom: 8 }}
+              style={{
+                width: "100%",
+                marginBottom: 8,
+                padding: 8,
+                borderRadius: 4,
+                border: "1px solid #ccc",
+              }}
             />
+            <label>Description:</label>
             <textarea
               value={editDescription}
               onChange={(e) => setEditDescription(e.target.value)}
               placeholder="Task description (optional)"
-              style={{ width: "100%", marginBottom: 8 }}
+              style={{
+                width: "100%",
+                marginBottom: 8,
+                padding: 8,
+                borderRadius: 4,
+                border: "1px solid #ccc",
+                height: 80,
+              }}
             />
+          <div style={{ flexDirection: "row"}}>
+            <label>Finish Date:</label>
             <input
               type="date"
               value={editFinishDate}
               onChange={(e) => setEditFinishDate(e.target.value)}
-              style={{ width: "100%", marginBottom: 8 }}
+              style={{
+                width: "100%",
+                marginBottom: 8,
+                padding: 8,
+                borderRadius: 4,
+                border: "1px solid #ccc",
+              }}
             />
+            <label>Priority</label>
+                {(() => {
+                  if (!task.finish_date) return null;
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+                  const finishDate = new Date(task.finish_date);
+                  finishDate.setHours(0, 0, 0, 0);
+                  const diffTime = finishDate.getTime() - today.getTime();
+                  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                  if (diffDays <= 3) {
+                    return (
+                      <p style={{ color: "#F03239", fontWeight: "bold" }}>
+                        High
+                      </p>
+                    );
+                  }
+                  if (diffDays > 3 && diffDays <= 5) {
+                    return (
+                      <p style={{ color: "#D4CB4E", fontWeight: "bold" }}>
+                        Medium
+                      </p>
+                    );
+                  }
+                  if (diffDays > 5) {
+                    return (
+                      <p style={{ color: "#00D223", fontWeight: "bold" }}>
+                        Low
+                      </p>
+                    );
+                  }
+                  return null;
+                })()}
+                </div>
             <label>Situation:</label>
             <select
               value={editSituation}
               onChange={(e) => setEditSituation(Number(e.target.value))}
-              style={{ width: "100%", marginBottom: 8 }}
+              style={{
+                width: "100%",
+                marginBottom: 8,
+                padding: 8,
+                borderRadius: 4,
+                border: "1px solid #ccc",
+              }}
             >
               <option value={0}>Backlog</option>
               <option value={1}>Em desenvolvimento</option>
               <option value={2}>Repasse</option>
               <option value={3}>Entregues</option>
             </select>
+
             <div
               className="task-actions"
               style={{
