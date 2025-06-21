@@ -5,11 +5,14 @@ import { Header } from "./Header";
 import { taskAPI } from "../services/api";
 import { useAuth } from "../contexts/AuthContext";
 import { Col, Flex, Row } from "antd";
+import { Filter } from "./Filter";
 
 export const TaskList = () => {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [filterTitle, setFilterTitle] = useState("");
+  const [filterPriority, setFilterPriority] = useState("");
 
   const { isAdmin, user } = useAuth();
 
@@ -78,6 +81,32 @@ export const TaskList = () => {
     }
   };
 
+  // Função para calcular prioridade
+  const getPriority = (task) => {
+    if (!task.finish_date) return "";
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const finishDate = new Date(task.finish_date);
+    finishDate.setHours(0, 0, 0, 0);
+    const diffTime = finishDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    if (diffDays <= 3) return "high";
+    if (diffDays > 3 && diffDays <= 5) return "medium";
+    if (diffDays > 5) return "low";
+    return "";
+  };
+
+  // Função para filtrar tasks
+  const filterTasks = (tasks, situation) =>
+    tasks
+      .filter((task) => task.situation === situation)
+      .filter((task) =>
+        task.title.toLowerCase().includes(filterTitle.toLowerCase())
+      )
+      .filter((task) =>
+        filterPriority ? getPriority(task) === filterPriority : true
+      );
+
   if (loading) return <div className="loading">Loading tasks...</div>;
   console.log("Tasks loaded:", tasks);
   return (
@@ -86,6 +115,12 @@ export const TaskList = () => {
 
       <div className="task-list-container">
         <AddTask onTaskAdded={handleTaskAdded} />
+        <Filter
+          filterTitle={filterTitle}
+          setFilterTitle={setFilterTitle}
+          filterPriority={filterPriority}
+          setFilterPriority={setFilterPriority}
+        />
 
         {error && <div className="error-message">{error}</div>}
 
@@ -120,19 +155,17 @@ export const TaskList = () => {
             <Flex>
               {tasks.length > 0 ? (
                 <ul className="tasks-list">
-                  {tasks
-                    .filter((task) => task.situation === 0)
-                    .map((task) => (
-                      <Task
-                        key={task.id}
-                        task={task}
-                        onDelete={() => handleDeleteTask(task.id)}
-                        onToggle={() => handleToggleTask(task.id)}
-                        onUpdate={(updatedTaskData) =>
-                          handleUpdateTask(task.id, updatedTaskData)
-                        }
-                      />
-                    ))}
+                  {filterTasks(tasks, 0).map((task) => (
+                    <Task
+                      key={task.id}
+                      task={task}
+                      onDelete={() => handleDeleteTask(task.id)}
+                      onToggle={() => handleToggleTask(task.id)}
+                      onUpdate={(updatedTaskData) =>
+                        handleUpdateTask(task.id, updatedTaskData)
+                      }
+                    />
+                  ))}
                 </ul>
               ) : (
                 <p className="no-tasks">
@@ -162,19 +195,17 @@ export const TaskList = () => {
             <Flex>
               {tasks.length > 0 ? (
                 <ul className="tasks-list">
-                  {tasks
-                    .filter((task) => task.situation === 1)
-                    .map((task) => (
-                      <Task
-                        key={task.id}
-                        task={task}
-                        onDelete={() => handleDeleteTask(task.id)}
-                        onToggle={() => handleToggleTask(task.id)}
-                        onUpdate={(updatedTaskData) =>
-                          handleUpdateTask(task.id, updatedTaskData)
-                        }
-                      />
-                    ))}
+                  {filterTasks(tasks, 1).map((task) => (
+                    <Task
+                      key={task.id}
+                      task={task}
+                      onDelete={() => handleDeleteTask(task.id)}
+                      onToggle={() => handleToggleTask(task.id)}
+                      onUpdate={(updatedTaskData) =>
+                        handleUpdateTask(task.id, updatedTaskData)
+                      }
+                    />
+                  ))}
                 </ul>
               ) : (
                 <p className="no-tasks">
@@ -204,19 +235,17 @@ export const TaskList = () => {
             <Flex>
               {tasks.length > 0 ? (
                 <ul className="tasks-list">
-                  {tasks
-                    .filter((task) => task.situation === 2)
-                    .map((task) => (
-                      <Task
-                        key={task.id}
-                        task={task}
-                        onDelete={() => handleDeleteTask(task.id)}
-                        onToggle={() => handleToggleTask(task.id)}
-                        onUpdate={(updatedTaskData) =>
-                          handleUpdateTask(task.id, updatedTaskData)
-                        }
-                      />
-                    ))}
+                  {filterTasks(tasks, 2).map((task) => (
+                    <Task
+                      key={task.id}
+                      task={task}
+                      onDelete={() => handleDeleteTask(task.id)}
+                      onToggle={() => handleToggleTask(task.id)}
+                      onUpdate={(updatedTaskData) =>
+                        handleUpdateTask(task.id, updatedTaskData)
+                      }
+                    />
+                  ))}
                 </ul>
               ) : (
                 <p className="no-tasks">
@@ -246,19 +275,17 @@ export const TaskList = () => {
             <Flex>
               {tasks.length > 0 ? (
                 <ul className="tasks-list">
-                  {tasks
-                    .filter((task) => task.situation === 3)
-                    .map((task) => (
-                      <Task
-                        key={task.id}
-                        task={task}
-                        onDelete={() => handleDeleteTask(task.id)}
-                        onToggle={() => handleToggleTask(task.id)}
-                        onUpdate={(updatedTaskData) =>
-                          handleUpdateTask(task.id, updatedTaskData)
-                        }
-                      />
-                    ))}
+                  {filterTasks(tasks, 3).map((task) => (
+                    <Task
+                      key={task.id}
+                      task={task}
+                      onDelete={() => handleDeleteTask(task.id)}
+                      onToggle={() => handleToggleTask(task.id)}
+                      onUpdate={(updatedTaskData) =>
+                        handleUpdateTask(task.id, updatedTaskData)
+                      }
+                    />
+                  ))}
                 </ul>
               ) : (
                 <p className="no-tasks">
@@ -268,26 +295,6 @@ export const TaskList = () => {
             </Flex>
           </Col>
         </Row>
-
-        {/* <div className="tasks-container">
-          {tasks.length > 0 ? (
-            <ul className="tasks-list">
-              {tasks.map((task) => (
-                <Task
-                  key={task.id}
-                  task={task}
-                  onDelete={() => handleDeleteTask(task.id)}
-                  onToggle={() => handleToggleTask(task.id)}
-                  onUpdate={(updatedTaskData) =>
-                    handleUpdateTask(task.id, updatedTaskData)
-                  }
-                />
-              ))}
-            </ul>
-          ) : (
-            <p className="no-tasks">No tasks yet. Add your first task above!</p>
-          )}
-        </div> */}
 
         <div className="user-permissions">
           <h3>Your Permissions:</h3>
