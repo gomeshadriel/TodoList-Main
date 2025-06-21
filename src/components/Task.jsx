@@ -139,7 +139,7 @@ export const Task = ({ task, onDelete, onToggle, onUpdate }) => {
               boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
             }}
           >
-            <h2>Editar Tarefa</h2>
+            <h2>Edit Task</h2>
             <label>Title:</label>
             <input
               type="text"
@@ -228,9 +228,9 @@ export const Task = ({ task, onDelete, onToggle, onUpdate }) => {
               }}
             >
               <option value={0}>Backlog</option>
-              <option value={1}>Em desenvolvimento</option>
-              <option value={2}>Repasse</option>
-              <option value={3}>Entregues</option>
+              <option value={1}>In development</option>
+              <option value={2}>Review</option>
+              <option value={3}>Delivered</option>
             </select>
 
             <div

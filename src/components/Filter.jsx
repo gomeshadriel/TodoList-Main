@@ -10,7 +10,7 @@ export const Filter = ({
     <div style={{ margin: "16px 0", display: "flex", gap: 16 }}>
       <input
         type="text"
-        placeholder="Pesquisar por título"
+        placeholder="Search by title"
         value={filterTitle}
         onChange={(e) => setFilterTitle(e.target.value)}
         style={{
@@ -31,10 +31,10 @@ export const Filter = ({
           height: 40,
         }}
       >
-        <option value="">Todas Prioridades</option>
-        <option value="high">Alta</option>
-        <option value="medium">Média</option>
-        <option value="low">Baixa</option>
+        <option value="">All Priorities</option>
+        <option value="high">High</option>
+        <option value="medium">Medium</option>
+        <option value="low">Low</option>
       </select>
     </div>
   );

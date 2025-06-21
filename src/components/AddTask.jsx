@@ -36,8 +36,6 @@ export const AddTask = ({ onTaskAdded }) => {
         situation: situation, // Corrigido: envia o valor correto
       });
 
-      
-
       if (onTaskAdded && typeof onTaskAdded === "function") {
         onTaskAdded(newTask);
       }
@@ -87,8 +85,7 @@ export const AddTask = ({ onTaskAdded }) => {
             placeholder="Enter Finish Date (optional)..."
             disabled={isSubmitting}
           />
-          <label>Prioridade</label>
-
+          <label>Priority</label>
           {(() => {
             if (!finishDate) return null;
 
@@ -112,7 +109,7 @@ export const AddTask = ({ onTaskAdded }) => {
                     textAlign: "center",
                   }}
                 >
-                  Alta
+                  High
                 </h3>
               );
             }
@@ -128,7 +125,7 @@ export const AddTask = ({ onTaskAdded }) => {
                     textAlign: "center",
                   }}
                 >
-                  Média
+                  Medium
                 </h3>
               );
             }
@@ -144,7 +141,7 @@ export const AddTask = ({ onTaskAdded }) => {
                     textAlign: "center",
                   }}
                 >
-                  Baixa
+                  Low
                 </h3>
               );
             }
@@ -161,15 +158,18 @@ export const AddTask = ({ onTaskAdded }) => {
             disabled={isSubmitting}
           >
             <option value={0}>Backlog</option>
-            <option value={1}>Em desenvolvimento</option>
-            <option value={2}>Repasse</option>
-            <option value={3}>Entregues</option>
+            <option value={1}>In development</option>
+            <option value={2}>Review</option>
+            <option value={3}>Delivered</option>
           </select>
         </div>
         <button type="submit" disabled={isSubmitting || !title.trim()}>
           {isSubmitting ? "Adding Task..." : "Add Task"}
         </button>
       </form>
+    </div>
+  );
+};
     </div>
   );
 };

@@ -191,7 +191,7 @@ export const TaskList = () => {
               gap: "8px",
             }}
           >
-            <h3>Em desenvolvimento</h3>
+            <h3>In development</h3>
             <Flex>
               {tasks.length > 0 ? (
                 <ul className="tasks-list">
@@ -231,7 +231,7 @@ export const TaskList = () => {
               gap: "8px",
             }}
           >
-            <h3>Repasse</h3>
+            <h3>Review</h3>
             <Flex>
               {tasks.length > 0 ? (
                 <ul className="tasks-list">
@@ -271,7 +271,7 @@ export const TaskList = () => {
               gap: "8px",
             }}
           >
-            <h3>Entregues</h3>
+            <h3>Delivered</h3>
             <Flex>
               {tasks.length > 0 ? (
                 <ul className="tasks-list">
