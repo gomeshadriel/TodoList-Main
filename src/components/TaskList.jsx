@@ -4,7 +4,6 @@ import { AddTask } from "./AddTask";
 import { Header } from "./Header";
 import { taskAPI } from "../services/api";
 import { useAuth } from "../contexts/AuthContext";
-import { Col, Flex, Row } from "antd";
 
 export const TaskList = () => {
   const [tasks, setTasks] = useState([]);
@@ -78,6 +77,110 @@ export const TaskList = () => {
     }
   };
 
+  const handleEditComment = async (taskId, commentId, newText) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `http://localhost:3001/api/tasks/${taskId}/comments/${commentId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ content: newText }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Erro ao editar comentário");
+      }
+
+      // Atualiza apenas o comentário editado no estado
+      setTasks((prevTasks) =>
+        prevTasks.map((task) =>
+          task.id === taskId
+            ? {
+                ...task,
+                comments: task.comments.map((comment) =>
+                  comment.id === commentId
+                    ? { ...comment, text: newText }
+                    : comment
+                ),
+              }
+            : task
+        )
+      );
+    } catch (error) {
+      console.error("Erro ao editar comentário:", error);
+    }
+  };
+
+  const handleAddComment = async (taskId, content) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `http://localhost:3001/api/tasks/${taskId}/comments`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ content }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to add comment");
+      }
+
+      const result = await response.json();
+
+      setTasks((prevTasks) =>
+        prevTasks.map((task) =>
+          task.id === taskId
+            ? { ...task, comments: [...(task.comments || []), result.data] }
+            : task
+        )
+      );
+    } catch (error) {
+      console.error("Error adding comment:", error);
+    }
+  };
+
+  const handleRemoveComment = async (taskId, commentId) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `http://localhost:3001/api/tasks/${taskId}/comments/${commentId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Erro ao remover comentário");
+      }
+      // Atualiza apenas a lista de comentários da task removida
+      setTasks((prevTasks) =>
+        prevTasks.map((task) =>
+          task.id === taskId
+            ? {
+                ...task,
+                comments: task.comments.filter((comment) => comment.id !== commentId),
+              }
+            : task
+        )
+      );
+    } catch (error) {
+      console.error("Erro ao remover comentário:", error);
+    }
+  };
+
   if (loading) return <div className="loading">Loading tasks...</div>;
 
   return (
@@ -85,55 +188,11 @@ export const TaskList = () => {
       <Header />
 
       <div className="task-list-container">
-        <AddTask onTaskAdded={handleTaskAdded} />
+        {isAdmin() && <AddTask onTaskAdded={handleTaskAdded} />}
 
         {error && <div className="error-message">{error}</div>}
 
-        <Row
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            width: "100%",
-          }}
-        >
-          <Col>
-            <h2>Backlog</h2>
-            <Flex>
-              {tasks.length > 0 ? (
-                <ul className="tasks-list">
-                  {tasks
-                    .filter((task) => task.status === 0)
-                    .map((task) => (
-                      <Task
-                        key={task.id}
-                        task={task}
-                        onDelete={() => handleDeleteTask(task.id)}
-                        onToggle={() => handleToggleTask(task.id)}
-                        onUpdate={(updatedTaskData) =>
-                          handleUpdateTask(task.id, updatedTaskData)
-                        }
-                      />
-                    ))}
-                </ul>
-              ) : (
-                <p className="no-tasks">
-                  No tasks yet. Add your first task above!
-                </p>
-              )}
-            </Flex>
-          </Col>
-          <Col>
-            <h2>Em desenvolvimento</h2>
-          </Col>
-          <Col>
-            <h2>Repasse</h2>
-          </Col>
-          <Col>
-            <h2>Entregues</h2>
-          </Col>
-        </Row>
-
-        {/* <div className="tasks-container">
+        <div className="tasks-container">
           {tasks.length > 0 ? (
             <ul className="tasks-list">
               {tasks.map((task) => (
@@ -145,26 +204,15 @@ export const TaskList = () => {
                   onUpdate={(updatedTaskData) =>
                     handleUpdateTask(task.id, updatedTaskData)
                   }
+                  onAddComment={handleAddComment}
+                  onEditComment={handleEditComment}
+                  onRemoveComment={handleRemoveComment}
                 />
               ))}
             </ul>
           ) : (
             <p className="no-tasks">No tasks yet. Add your first task above!</p>
           )}
-        </div> */}
-
-        <div className="user-permissions">
-          <h3>Your Permissions:</h3>
-          <ul>
-            <li>✅ View tasks</li>
-            <li>✅ Create tasks</li>
-            <li>✅ Edit tasks</li>
-            <li>✅ Toggle task status</li>
-            <li>
-              {isAdmin() ? "✅" : "❌"} Delete tasks{" "}
-              {!isAdmin() && "(Admin only)"}
-            </li>
-          </ul>
         </div>
       </div>
     </div>
