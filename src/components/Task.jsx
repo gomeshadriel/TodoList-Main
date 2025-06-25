@@ -357,6 +357,71 @@ export const Task = ({ task, onDelete, onToggle, onUpdate }) => {
             {/* Campo de comentários */}
             <div style={{ marginTop: 32 }}>
               <h3>Comentários</h3>
+
+              {loadingComments ? (
+                <div>Carregando comentários...</div>
+              ) : comments.length === 0 ? (
+                <div>Nenhum comentário ainda.</div>
+              ) : (
+                <ul style={{ listStyle: "none", padding: 0 }}>
+                  {comments.map((c, idx) => (
+                    <li
+                      key={idx}
+                      style={{
+                        display: "block",
+                      }}
+                    >
+                      <Row
+                        style={{
+                          marginBottom: 4,
+                          gap: 8,
+                          display: "block",
+                        }}
+                      >
+                        <Col
+                          xs={12}
+                          style={{ fontWeight: "bold", flexShrink: 0, gap: 12 }}
+                        >
+                          <img
+                            src="/profile.png"
+                            alt="profile"
+                            style={{
+                              width: 24,
+                              height: 24,
+                              borderRadius: "50%",
+                              marginRight: 8,
+                              objectFit: "cover",
+                              verticalAlign: "middle",
+                            }}
+                          />
+                          {c.nome_usuario}
+                          <p
+                            xs={12}
+                            style={{
+                              fontSize: 12,
+                              color: "#888",
+                              whiteSpace: "nowrap",
+                              flexShrink: 0,
+                            }}
+                          >
+                            {new Date(c.data_criacao).toLocaleString("pt-BR")}
+                          </p>
+                        </Col>
+                      </Row>
+                      <Row
+                        style={{
+                          whiteSpace: "pre-wrap",
+                          wordBreak: "break-word",
+                          overflowWrap: "break-word",
+                          fontSize: 15,
+                        }}
+                      >
+                        {c.texto}
+                      </Row>
+                    </li>
+                  ))}
+                </ul>
+              )}
               <form onSubmit={handleAddComment} style={{ marginBottom: 16 }}>
                 <textarea
                   value={commentText}
@@ -387,63 +452,6 @@ export const Task = ({ task, onDelete, onToggle, onUpdate }) => {
                   {postingComment ? "Enviando..." : "Comentar"}
                 </button>
               </form>
-              {loadingComments ? (
-                <div>Carregando comentários...</div>
-              ) : comments.length === 0 ? (
-                <div>Nenhum comentário ainda.</div>
-              ) : (
-                <ul style={{ listStyle: "none", padding: 0 }}>
-                  {comments.map((c, idx) => (
-                    <li
-                      key={idx}
-                      style={{
-                        borderBottom: "1px solid #eee",
-                        marginBottom: 8,
-                        paddingBottom: 8,
-                        wordBreak: "break-word",
-                        overflowWrap: "break-word",
-                        background: "#fafbfc",
-                        borderRadius: 4,
-                        padding: "8px 12px",
-                      }}
-                    >
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "flex-start",
-                          marginBottom: 4,
-                          gap: 8,
-                        }}
-                      >
-                        <span style={{ fontWeight: "bold", flexShrink: 0 }}>
-                          {c.nome_usuario}
-                        </span>
-                        <span
-                          style={{
-                            fontSize: 12,
-                            color: "#888",
-                            whiteSpace: "nowrap",
-                            flexShrink: 0,
-                          }}
-                        >
-                          {new Date(c.data_criacao).toLocaleString("pt-BR")}
-                        </span>
-                      </div>
-                      <div
-                        style={{
-                          whiteSpace: "pre-wrap",
-                          wordBreak: "break-word",
-                          overflowWrap: "break-word",
-                          fontSize: 15,
-                        }}
-                      >
-                        {c.texto}
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              )}
             </div>
           </div>
         </div>
