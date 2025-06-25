@@ -219,7 +219,7 @@ export const Task = ({ task, onDelete, onToggle, onUpdate }) => {
             justifyContent: "center",
             zIndex: 1000,
           }}
-          onClick={handleCloseModal} // fecha ao clicar fora do modal
+          onClick={handleCloseModal}
         >
           <div
             className="modal-content"
@@ -230,11 +230,11 @@ export const Task = ({ task, onDelete, onToggle, onUpdate }) => {
               minWidth: 320,
               maxWidth: 1000,
               boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-              maxHeight: "90vh", // limita altura máxima
-              overflowY: "auto", // permite rolagem
+              maxHeight: "90vh",
+              overflowY: "auto",
               position: "relative",
             }}
-            onClick={(e) => e.stopPropagation()} // impede fechar ao clicar dentro do modal
+            onClick={(e) => e.stopPropagation()}
           >
             <h2>Edit Task</h2>
             <label>Title:</label>
@@ -250,6 +250,7 @@ export const Task = ({ task, onDelete, onToggle, onUpdate }) => {
                 borderRadius: 4,
                 border: "1px solid #ccc",
               }}
+              disabled={!isAdmin()}
             />
             <label>Description:</label>
             <textarea
@@ -264,6 +265,7 @@ export const Task = ({ task, onDelete, onToggle, onUpdate }) => {
                 border: "1px solid #ccc",
                 height: 80,
               }}
+              disabled={!isAdmin()}
             />
             <div style={{ flexDirection: "row" }}>
               <label>Finish Date:</label>
@@ -278,6 +280,7 @@ export const Task = ({ task, onDelete, onToggle, onUpdate }) => {
                   borderRadius: 4,
                   border: "1px solid #ccc",
                 }}
+                disabled={!isAdmin()}
               />
               <label>Priority</label>
               {(() => {
@@ -319,6 +322,7 @@ export const Task = ({ task, onDelete, onToggle, onUpdate }) => {
                 borderRadius: 4,
                 border: "1px solid #ccc",
               }}
+              disabled={!isAdmin()}
             >
               <option value={0}>Backlog</option>
               <option value={1}>In development</option>
@@ -334,30 +338,35 @@ export const Task = ({ task, onDelete, onToggle, onUpdate }) => {
                 gap: 8,
               }}
             >
-              <button onClick={handleSave} className="save-btn">
-                Save
-              </button>
-              <button onClick={handleCloseModal} className="cancel-btn">
-                Cancel
-              </button>
-              {isAdmin() && (
-                <button
-                  onClick={handleDelete}
-                  className="delete-btn"
-                  style={{
-                    marginLeft: "auto",
-                    background: "#f44336",
-                    color: "#fff",
-                  }}
-                >
-                  Delete
+              {isAdmin() ? (
+                <>
+                  <button onClick={handleSave} className="save-btn">
+                    Save
+                  </button>
+                  <button onClick={handleCloseModal} className="cancel-btn">
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    className="delete-btn"
+                    style={{
+                      marginLeft: "auto",
+                      background: "#f44336",
+                      color: "#fff",
+                    }}
+                  >
+                    Delete
+                  </button>
+                </>
+              ) : (
+                <button onClick={handleCloseModal} className="cancel-btn">
+                  Fechar
                 </button>
               )}
             </div>
             {/* Campo de comentários */}
             <div style={{ marginTop: 32 }}>
               <h3>Comentários</h3>
-
               {loadingComments ? (
                 <div>Carregando comentários...</div>
               ) : comments.length === 0 ? (
