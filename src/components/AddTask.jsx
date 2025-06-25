@@ -170,6 +170,3 @@ export const AddTask = ({ onTaskAdded }) => {
     </div>
   );
 };
-    </div>
-  );
-};

@@ -58,14 +58,16 @@ db.serialize(() => {
     )
   `);
 
+  // Criação da tabela de comentários
   db.run(`
     CREATE TABLE IF NOT EXISTS comments (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      tarefa_id INTEGER NOT NULL,
-      nome_usuario VARCHAR(100) NOT NULL,
       texto TEXT NOT NULL,
       data_criacao DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (tarefa_id) REFERENCES tarefas(id)
+      task_id INTEGER NOT NULL,
+      user_id INTEGER NOT NULL,
+      FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     )
   `);
 
@@ -201,8 +203,9 @@ app.post("/api/auth/login", async (req, res) => {
           return res.status(401).json({ error: "Invalid credentials" });
         }
 
+        // Adicione o campo name ao payload do token
         const token = jwt.sign(
-          { id: user.id, email: user.email, type: user.type },
+          { id: user.id, email: user.email, type: user.type, name: user.name },
           JWT_SECRET,
           { expiresIn: "24h" }
         );
@@ -409,6 +412,66 @@ app.delete("/api/tasks/:id", authenticateToken, requireAdmin, (req, res) => {
         message: "Task deleted successfully",
       });
     }
+  });
+});
+
+// Rotas de comentários
+
+// Listar comentários de uma task (ordem cronológica, inclui nome do usuário)
+app.get("/api/tasks/:id/comments", authenticateToken, (req, res) => {
+  const { id } = req.params;
+  const sql = `
+    SELECT c.id, c.texto, c.data_criacao, u.name as nome_usuario
+    FROM comments c
+    JOIN users u ON c.user_id = u.id
+    WHERE c.task_id = ?
+    ORDER BY c.data_criacao ASC
+  `;
+  db.all(sql, [id], (err, rows) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.json({
+      message: "success",
+      data: rows,
+    });
+  });
+});
+
+// Criar comentário em uma task
+app.post("/api/tasks/:id/comments", authenticateToken, (req, res) => {
+  const { id } = req.params;
+  const { texto } = req.body;
+  if (!texto || !texto.trim()) {
+    return res.status(400).json({ error: "Texto do comentário é obrigatório" });
+  }
+  const sql = `
+    INSERT INTO comments (texto, task_id, user_id)
+    VALUES (?, ?, ?)
+  `;
+  db.run(sql, [texto, id, req.user.id], function (err) {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    // Buscar o comentário recém-criado com nome do usuário
+    db.get(
+      `
+      SELECT c.id, c.texto, c.data_criacao, u.name as nome_usuario
+      FROM comments c
+      JOIN users u ON c.user_id = u.id
+      WHERE c.id = ?
+      `,
+      [this.lastID],
+      (err, row) => {
+        if (err) {
+          return res.status(500).json({ error: err.message });
+        }
+        res.json({
+          message: "Comentário criado com sucesso",
+          data: row,
+        });
+      }
+    );
   });
 });
 

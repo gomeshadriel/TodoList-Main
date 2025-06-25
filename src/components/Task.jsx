@@ -8,9 +8,9 @@
 //     </li>
 //   );
 // };
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { Col, Row, Flex } from "antd";
+import { Col, Row, Flex, Tooltip } from "antd"; // Adiciona Tooltip do Ant Design
 
 export const Task = ({ task, onDelete, onToggle, onUpdate }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -20,8 +20,68 @@ export const Task = ({ task, onDelete, onToggle, onUpdate }) => {
   const [editDescription, setEditDescription] = useState(
     task.description || ""
   );
+  const [comments, setComments] = useState([]);
+  const [commentText, setCommentText] = useState("");
+  const [loadingComments, setLoadingComments] = useState(false);
+  const [postingComment, setPostingComment] = useState(false);
+  const { isAdmin, token } = useAuth();
 
-  const { isAdmin } = useAuth();
+  // Carrega comentários ao abrir o modal
+  useEffect(() => {
+    if (isModalOpen) {
+      fetchComments();
+    }
+    // eslint-disable-next-line
+  }, [isModalOpen]);
+
+  const fetchComments = async () => {
+    setLoadingComments(true);
+    try {
+      const res = await fetch(
+        `http://localhost:3001/api/tasks/${task.id}/comments`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      const data = await res.json();
+      if (data.data) setComments(data.data);
+    } catch (e) {
+      setComments([]);
+    }
+    setLoadingComments(false);
+  };
+
+  const handleAddComment = async (e) => {
+    e.preventDefault();
+    if (!commentText.trim()) return;
+    setPostingComment(true);
+    try {
+      const res = await fetch(
+        `http://localhost:3001/api/tasks/${task.id}/comments`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ texto: commentText }),
+        }
+      );
+      const data = await res.json();
+      if (res.ok && data.data) {
+        setComments((prev) => [...prev, data.data]);
+        setCommentText("");
+      } else {
+        // Mostra erro se houver
+        alert(data.error || "Erro ao adicionar comentário");
+        console.error("Erro ao adicionar comentário:", data);
+      }
+    } catch (e) {
+      alert("Erro de rede ao adicionar comentário");
+      console.error("Erro de rede ao adicionar comentário:", e);
+    }
+    setPostingComment(false);
+  };
 
   const handleOpenModal = () => {
     setEditTitle(task.title);
@@ -59,14 +119,46 @@ export const Task = ({ task, onDelete, onToggle, onUpdate }) => {
   return (
     <>
       <li
-        className="task-item"
         onClick={handleOpenModal}
-        style={{ cursor: "pointer" }}
+        style={{
+          cursor: "pointer",
+          maxWidth: "100%",
+          width: "100%",
+          boxSizing: "border-box",
+        }}
       >
         <Row className="task-content">
           <Col xs={24} xxl={24} className="task-text">
-            <h3>{task.title}</h3>
-            {task.description && <p>{task.description}</p>}
+            <Tooltip title={task.title} placement="topLeft">
+              <h3
+                style={{
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  maxWidth: "100%",
+                  marginBottom: 4,
+                  cursor: "pointer",
+                }}
+              >
+                {task.title}
+              </h3>
+            </Tooltip>
+            {task.description && (
+              <Tooltip title={task.description} placement="topLeft">
+                <p
+                  style={{
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    maxWidth: "100%",
+                    marginBottom: 0,
+                    cursor: "pointer",
+                  }}
+                >
+                  {task.description}
+                </p>
+              </Tooltip>
+            )}
           </Col>
           <Col xs={24} xxl={24} className="task-footer">
             <Row>
@@ -127,6 +219,7 @@ export const Task = ({ task, onDelete, onToggle, onUpdate }) => {
             justifyContent: "center",
             zIndex: 1000,
           }}
+          onClick={handleCloseModal} // fecha ao clicar fora do modal
         >
           <div
             className="modal-content"
@@ -137,7 +230,11 @@ export const Task = ({ task, onDelete, onToggle, onUpdate }) => {
               minWidth: 320,
               maxWidth: 1000,
               boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+              maxHeight: "90vh", // limita altura máxima
+              overflowY: "auto", // permite rolagem
+              position: "relative",
             }}
+            onClick={(e) => e.stopPropagation()} // impede fechar ao clicar dentro do modal
           >
             <h2>Edit Task</h2>
             <label>Title:</label>
@@ -168,53 +265,49 @@ export const Task = ({ task, onDelete, onToggle, onUpdate }) => {
                 height: 80,
               }}
             />
-          <div style={{ flexDirection: "row"}}>
-            <label>Finish Date:</label>
-            <input
-              type="date"
-              value={editFinishDate}
-              onChange={(e) => setEditFinishDate(e.target.value)}
-              style={{
-                width: "100%",
-                marginBottom: 8,
-                padding: 8,
-                borderRadius: 4,
-                border: "1px solid #ccc",
-              }}
-            />
-            <label>Priority</label>
-                {(() => {
-                  if (!task.finish_date) return null;
-                  const today = new Date();
-                  today.setHours(0, 0, 0, 0);
-                  const finishDate = new Date(task.finish_date);
-                  finishDate.setHours(0, 0, 0, 0);
-                  const diffTime = finishDate.getTime() - today.getTime();
-                  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                  if (diffDays <= 3) {
-                    return (
-                      <p style={{ color: "#F03239", fontWeight: "bold" }}>
-                        High
-                      </p>
-                    );
-                  }
-                  if (diffDays > 3 && diffDays <= 5) {
-                    return (
-                      <p style={{ color: "#D4CB4E", fontWeight: "bold" }}>
-                        Medium
-                      </p>
-                    );
-                  }
-                  if (diffDays > 5) {
-                    return (
-                      <p style={{ color: "#00D223", fontWeight: "bold" }}>
-                        Low
-                      </p>
-                    );
-                  }
-                  return null;
-                })()}
-                </div>
+            <div style={{ flexDirection: "row" }}>
+              <label>Finish Date:</label>
+              <input
+                type="date"
+                value={editFinishDate}
+                onChange={(e) => setEditFinishDate(e.target.value)}
+                style={{
+                  width: "100%",
+                  marginBottom: 8,
+                  padding: 8,
+                  borderRadius: 4,
+                  border: "1px solid #ccc",
+                }}
+              />
+              <label>Priority</label>
+              {(() => {
+                if (!task.finish_date) return null;
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const finishDate = new Date(task.finish_date);
+                finishDate.setHours(0, 0, 0, 0);
+                const diffTime = finishDate.getTime() - today.getTime();
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                if (diffDays <= 3) {
+                  return (
+                    <p style={{ color: "#F03239", fontWeight: "bold" }}>High</p>
+                  );
+                }
+                if (diffDays > 3 && diffDays <= 5) {
+                  return (
+                    <p style={{ color: "#D4CB4E", fontWeight: "bold" }}>
+                      Medium
+                    </p>
+                  );
+                }
+                if (diffDays > 5) {
+                  return (
+                    <p style={{ color: "#00D223", fontWeight: "bold" }}>Low</p>
+                  );
+                }
+                return null;
+              })()}
+            </div>
             <label>Situation:</label>
             <select
               value={editSituation}
@@ -259,6 +352,97 @@ export const Task = ({ task, onDelete, onToggle, onUpdate }) => {
                 >
                   Delete
                 </button>
+              )}
+            </div>
+            {/* Campo de comentários */}
+            <div style={{ marginTop: 32 }}>
+              <h3>Comentários</h3>
+              <form onSubmit={handleAddComment} style={{ marginBottom: 16 }}>
+                <textarea
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  placeholder="Escreva um comentário..."
+                  style={{
+                    width: "100%",
+                    minHeight: 60,
+                    padding: 8,
+                    borderRadius: 4,
+                    border: "1px solid #ccc",
+                    marginBottom: 8,
+                  }}
+                  disabled={postingComment}
+                />
+                <button
+                  type="submit"
+                  disabled={postingComment || !commentText.trim()}
+                  style={{
+                    padding: "6px 16px",
+                    borderRadius: 4,
+                    border: "none",
+                    background: "#1976d2",
+                    color: "#fff",
+                    cursor: "pointer",
+                  }}
+                >
+                  {postingComment ? "Enviando..." : "Comentar"}
+                </button>
+              </form>
+              {loadingComments ? (
+                <div>Carregando comentários...</div>
+              ) : comments.length === 0 ? (
+                <div>Nenhum comentário ainda.</div>
+              ) : (
+                <ul style={{ listStyle: "none", padding: 0 }}>
+                  {comments.map((c, idx) => (
+                    <li
+                      key={idx}
+                      style={{
+                        borderBottom: "1px solid #eee",
+                        marginBottom: 8,
+                        paddingBottom: 8,
+                        wordBreak: "break-word",
+                        overflowWrap: "break-word",
+                        background: "#fafbfc",
+                        borderRadius: 4,
+                        padding: "8px 12px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "flex-start",
+                          marginBottom: 4,
+                          gap: 8,
+                        }}
+                      >
+                        <span style={{ fontWeight: "bold", flexShrink: 0 }}>
+                          {c.nome_usuario}
+                        </span>
+                        <span
+                          style={{
+                            fontSize: 12,
+                            color: "#888",
+                            whiteSpace: "nowrap",
+                            flexShrink: 0,
+                          }}
+                        >
+                          {new Date(c.data_criacao).toLocaleString("pt-BR")}
+                        </span>
+                      </div>
+                      <div
+                        style={{
+                          whiteSpace: "pre-wrap",
+                          wordBreak: "break-word",
+                          overflowWrap: "break-word",
+                          fontSize: 15,
+                        }}
+                      >
+                        {c.texto}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
               )}
             </div>
           </div>
